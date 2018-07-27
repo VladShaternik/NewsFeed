@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">News Feed</string>
+
+    <!-- Empty state texts -->
+    <string name="no_internet_connection">No internet connection</string>
+    <string name="no_publications_found">No publications found</string>
 </resources>
