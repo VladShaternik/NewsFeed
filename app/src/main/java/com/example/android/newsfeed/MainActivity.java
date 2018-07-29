@@ -4,11 +4,15 @@ import android.app.LoaderManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.Loader;
+import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
@@ -88,6 +92,43 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     /**
+     * onCreateOptionsMenu
+     *
+     * This method initialize the contents of the Activity's options menu.
+     *
+     * @param menu - menu to inflate
+     * @return     - whether the menu was inflated
+     */
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the Options Menu we specified in XML
+        getMenuInflater().inflate(R.menu.main, menu);
+
+        return true;
+    }
+
+    /**
+     * onOptionsItemSelected
+     *
+     * Open settings activity when item in the Options Menu is selected.
+     *
+     * @param item - item clicked
+     * @return     - whether action was successful
+     */
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == R.id.action_settings) {
+            Intent settingsIntent = new Intent(this, SettingsActivity.class);
+            startActivity(settingsIntent);
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    /**
      * onCreateLoader
      *
      * When Loader is created it returns custom loader with url of the desired json
@@ -98,10 +139,26 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
      */
     @Override
     public Loader<List<Publication>> onCreateLoader(int id, Bundle args) {
-        // Url of the json
-        String publicationsUrl = "https://content.guardianapis.com/search?page-size=200&api-key=87ac2707-711e-4c4c-8c31-8c33b760e15c";
+        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
 
-        return new PublicationsLoader(this, publicationsUrl);
+        String publicationsAmt = sharedPrefs.getString(
+                getString(R.string.settings_publications_amt_key),
+                getString(R.string.settings_publications_amt_default));
+
+        String orderBy  = sharedPrefs.getString(
+                getString(R.string.settings_order_by_key),
+                getString(R.string.settings_order_by_default)
+        );
+
+        Uri baseUri = Uri.parse("https://content.guardianapis.com/search");
+
+        Uri.Builder uriBuilder = baseUri.buildUpon();
+
+        uriBuilder.appendQueryParameter("api-key", "87ac2707-711e-4c4c-8c31-8c33b760e15c");
+        uriBuilder.appendQueryParameter("page-size", publicationsAmt);
+        uriBuilder.appendQueryParameter("order-by", orderBy);
+
+        return new PublicationsLoader(this, uriBuilder.toString());
     }
 
     /**
